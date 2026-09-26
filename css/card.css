@@ -1,0 +1,74 @@
+/* Report card — the approved PDF layout (Section 10.1), also used for Report detail (8.3). */
+.rcard {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-inline-start: 6px solid var(--accent);
+  color: var(--ink);
+  font-family: var(--font);
+  overflow: hidden;
+}
+.rcard-id { background: var(--band); padding: 14px 18px 12px; border-bottom: 1px solid var(--line); }
+.rcard-id-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.rcard-name { font-size: 21px; font-weight: 700; color: var(--accent); line-height: 1.3; overflow-wrap: anywhere; }
+.rcard-mobile { white-space: nowrap; font-size: 14px; }
+.rcard-mobile b { font-weight: 700; margin-inline-start: 6px; unicode-bidi: isolate; direction: ltr; display: inline-block; }
+.rcard .lbl { font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.rcard .val { font-size: 14px; font-weight: 700; margin-top: 2px; overflow-wrap: anywhere; }
+.rcard-fields { display: flex; margin-top: 12px; }
+.rcard-fields .fld { flex: 1 1 0; min-width: 0; padding: 0 14px; border-inline-start: 1px solid var(--line); }
+.rcard-fields .fld:first-child { padding-inline-start: 0; border-inline-start: 0; }
+.rcard-fields .fld.wide { flex-grow: 1.8; }
+.rcard-sec { padding: 14px 18px 6px; }
+.rcard-sec + .rcard-sec { padding-top: 6px; }
+.rcard .sec-lbl { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.rcard .sec-note { font-weight: 400; color: var(--muted); letter-spacing: 0; text-transform: none; }
+.rcard:lang(ar) .lbl, .rcard:lang(ar) .sec-lbl { letter-spacing: 0; text-transform: none; font-size: 12px; }
+
+.rbody { font-size: 14.5px; line-height: 1.65; padding-bottom: 8px; overflow-wrap: anywhere; }
+.rbody p, .rbody h1, .rbody h2, .rbody h3 { unicode-bidi: plaintext; text-align: start; }
+.rbody p { margin: 0 0 6px; }
+.rbody h1, .rbody h2 { font-size: 19px; margin: 6px 0 6px; }
+.rbody h3 { font-size: 16.5px; margin: 6px 0 4px; }
+.rbody ol, .rbody ul { margin: 0 0 6px; padding-inline-start: 26px; }
+.rbody li { margin: 0 0 2px; }
+.rbody .ql-size-small { font-size: .8em; }
+.rbody .ql-size-large { font-size: 1.35em; }
+.rbody .ql-size-huge { font-size: 1.8em; }
+.rbody .ql-direction-rtl { direction: rtl; }
+.rbody .ql-align-center { text-align: center; }
+.rbody .ql-align-right { text-align: right; }
+
+.rphotos { padding-bottom: 8px; }
+.prow { display: flex; gap: 10px; margin-bottom: 10px; }
+.pcell {
+  flex: 1 1 0; min-width: 0; height: 250px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--zebra); border: 1px solid var(--line);
+}
+.pcell.empty { visibility: hidden; }
+.pcell img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+button.pcell { cursor: zoom-in; padding: 0; }
+
+.rcard-foot {
+  background: var(--zebra); border-top: 1px solid var(--line);
+  text-align: center; color: var(--muted); font-size: 12px; padding: 8px 12px;
+}
+.rcard-cont { font-size: 13px; font-weight: 700; color: var(--accent); padding: 6px 0 8px; border-bottom: 2px solid var(--accent); margin-bottom: 8px; }
+
+/* PDF page-1 blocks */
+.pdf-title h1 { font-size: 26px; color: var(--ink); margin: 0 0 6px; }
+.pdf-title .pdf-filters { font-size: 13px; color: var(--muted); padding-bottom: 12px; }
+.pdf-title .pdf-filters b { color: var(--ink); font-weight: 600; }
+.sumtable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.sumtable th {
+  background: var(--band); color: var(--ink); text-align: start; font-weight: 700;
+  padding: 7px 8px; border-bottom: 2px solid var(--accent); font-size: 11.5px;
+}
+.sumtable td { padding: 6px 8px; border-bottom: 1px solid #dfe7ef; vertical-align: top; }
+.sumtable tr:nth-child(even) td { background: var(--zebra); }
+.sumtable .num { width: 34px; color: var(--muted); }
+.sumtable .mob { white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
+
+/* The off-screen stage used to render PDF blocks */
+.pdf-stage { position: fixed; left: -12000px; top: 0; width: 720px; background: #fff; direction: ltr; }
+.pdf-stage > * { margin: 0; }

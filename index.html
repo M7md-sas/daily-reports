@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2F5D8A">
+  <title>Daily Consultant Reports</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/consultant.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+  <script type="module" src="js/consultant.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="brand" data-i18n="app.name">Daily Consultant Reports</div>
+    <button type="button" class="lang-toggle" id="langToggle"></button>
+  </header>
+
+  <main class="wrap">
+    <!-- loading / fatal -->
+    <section id="screenLoading" class="center-state">
+      <span class="spinner"></span>
+      <p data-i18n="common.loading">Loading…</p>
+    </section>
+    <script>
+      // If a library fails to download, the app never starts: offer a reload instead of spinning forever.
+      setTimeout(function () {
+        var l = document.getElementById('screenLoading');
+        if (l && !l.hidden && !window.__dcrBooted) {
+          l.innerHTML = '<p>Could not load the page. Check your connection.<br><span lang="ar" dir="rtl">تعذّر تحميل الصفحة. تأكد من الاتصال.</span></p>' +
+            '<button type="button" class="btn primary" onclick="location.reload()">Retry / إعادة المحاولة</button>';
+        }
+      }, 15000);
+    </script>
+    <section id="screenFatal" class="center-state" hidden>
+      <p id="fatalMsg"></p>
+      <button type="button" class="btn primary" id="fatalRetry" data-i18n="common.retry">Retry</button>
+    </section>
+
+    <!-- registration / edit details -->
+    <section id="screenRegister" hidden>
+      <h1 id="regTitle" data-i18n="reg.title">Welcome</h1>
+      <p class="muted" id="regIntro" data-i18n="reg.intro"></p>
+      <form id="regForm" class="panel" novalidate>
+        <label class="field">
+          <span class="label" data-i18n="reg.name">Full Name</span>
+          <input class="input" id="regName" name="name" autocomplete="name" maxlength="100" required data-i18n-ph="reg.name.ph">
+        </label>
+        <label class="field">
+          <span class="label" data-i18n="reg.mobile">Mobile Number</span>
+          <input class="input" id="regMobile" name="mobile" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required data-i18n-ph="reg.mobile.ph">
+          <span class="hint" data-i18n="reg.mobile.hint"></span>
+        </label>
+        <label class="field" id="regCodeField" hidden>
+          <span class="label" data-i18n="reg.code">Team Access Code</span>
+          <input class="input" id="regCode" name="code" autocomplete="off" maxlength="64" data-i18n-ph="reg.code.ph">
+        </label>
+        <div id="regError" class="msg error" role="alert" hidden></div>
+        <div class="row-btns">
+          <button type="button" class="btn" id="regCancel" data-i18n="common.cancel" hidden>Cancel</button>
+          <button type="submit" class="btn primary lg grow" id="regSubmit" data-i18n="reg.submit">Continue</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- report form -->
+    <section id="screenReport" hidden>
+      <div class="identity panel">
+        <div class="identity-main">
+          <div class="identity-label" data-i18n="rep.identity">Submitting as</div>
+          <div class="identity-name" id="idName"></div>
+          <div class="identity-mobile" id="idMobile" dir="ltr"></div>
+        </div>
+        <button type="button" class="linkbtn" id="editDetails" data-i18n="rep.editDetails">Edit my details</button>
+      </div>
+      <div id="noticeBox" class="msg" hidden></div>
+
+      <form id="reportForm" novalidate>
+        <fieldset class="field" id="typeField">
+          <legend class="label" data-i18n="rep.type">Project Type</legend>
+          <div class="type-buttons" role="radiogroup">
+            <button type="button" class="type-btn" role="radio" aria-checked="false" data-type="UGC"><b>UGC</b><span data-i18n="typedesc.UGC"></span></button>
+            <button type="button" class="type-btn" role="radio" aria-checked="false" data-type="S/S"><b>S/S</b><span data-i18n="typedesc.S/S"></span></button>
+            <button type="button" class="type-btn" role="radio" aria-checked="false" data-type="OHTL"><b>OHTL</b><span data-i18n="typedesc.OHTL"></span></button>
+          </div>
+          <div class="field-error" id="errType" hidden></div>
+        </fieldset>
+
+        <label class="field" id="projectField">
+          <span class="label" data-i18n="rep.project">Project Name</span>
+          <select class="select" id="projectSelect" disabled></select>
+          <span class="hint" id="projectHint"></span>
+          <div class="field-error" id="errProject" hidden></div>
+        </label>
+        <label class="field" id="otherField" hidden>
+          <span class="label" data-i18n="rep.project.otherName">Type the project name</span>
+          <input class="input" id="otherName" maxlength="150" dir="auto">
+          <div class="field-error" id="errOther" hidden></div>
+        </label>
+
+        <div class="field">
+          <span class="label" id="bodyLabel" data-i18n="rep.body">Report</span>
+          <div class="editor-wrap" aria-labelledby="bodyLabel">
+            <div id="editor"></div>
+          </div>
+          <div class="field-error" id="errBody" hidden></div>
+        </div>
+
+        <div class="field">
+          <span class="label"><span data-i18n="rep.photos">Photos</span> <span class="opt">(<span data-i18n="rep.photos.optional">optional</span>)</span></span>
+          <div class="photo-actions">
+            <label class="btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+              <span data-i18n="rep.photos.camera">Take photo</span>
+              <input type="file" accept="image/*" capture="environment" id="photoCamera" class="visually-hidden">
+            </label>
+            <label class="btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 12 4.5-6 3.5 4.5 2.5-3L20 16V6H4v10zm11-8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
+              <span data-i18n="rep.photos.gallery">Choose from gallery</span>
+              <input type="file" accept="image/*" multiple id="photoGallery" class="visually-hidden">
+            </label>
+          </div>
+          <div class="hint" id="photoHint"></div>
+          <ul class="thumbs" id="thumbs"></ul>
+        </div>
+
+        <div id="pendingBox" class="msg warn" hidden>
+          <strong data-i18n="pending.title"></strong>
+          <div data-i18n="pending.hint"></div>
+        </div>
+        <div id="submitError" class="msg error" role="alert" hidden></div>
+        <div id="progressBox" class="progress-box" hidden>
+          <div class="progress"><span id="progressBar" style="width:0%"></span></div>
+          <div class="small muted" id="progressText"></div>
+        </div>
+
+        <button type="submit" class="btn primary lg block" id="submitBtn" data-i18n="rep.submit">Submit Report</button>
+        <p class="hint center" data-i18n="rep.timeNote"></p>
+      </form>
+    </section>
+
+    <!-- success -->
+    <section id="screenSuccess" class="success" hidden>
+      <div class="success-icon" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#E7F2EC"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#2E6B4E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 data-i18n="ok.title">Report submitted</h1>
+      <p class="muted" data-i18n="ok.recorded">Recorded on</p>
+      <p class="success-when"><span id="okDate"></span><br><span id="okTime" class="success-time"></span></p>
+      <button type="button" class="btn primary lg block" id="anotherBtn" data-i18n="ok.another">Submit another report</button>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,68 @@
+# Keeps the free Supabase project from pausing (Section 11).
+#
+# 1. Every day it calls heartbeat_ping(), which updates the heartbeat row —
+#    real database activity, so Supabase does not pause the project.
+# 2. GitHub disables scheduled workflows in repositories with no commits for 60 days.
+#    When the last commit is older than 45 days, the job commits a one-line
+#    timestamp file (.github/keepalive.txt) so the schedule is never disabled.
+#    That is at most ~8 commits a year, and only when nobody else committed.
+name: keep-alive
+
+on:
+  schedule:
+    - cron: '17 3 * * *' # daily, 06:17 Riyadh time
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Add the SUPABASE_URL and SUPABASE_ANON_KEY repository secrets."
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            code=$(curl -s -o response.txt -w '%{http_code}' -X POST \
+              "$SUPABASE_URL/rest/v1/rpc/heartbeat_ping" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{}')
+            echo "Attempt $attempt: HTTP $code $(cat response.txt)"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "::error::Supabase did not answer. If the project is paused, restore it in the Supabase dashboard."
+          exit 1
+
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Keep the schedule enabled
+        run: |
+          last=$(git log -1 --format=%ct)
+          now=$(date +%s)
+          age_days=$(( (now - last) / 86400 ))
+          echo "Last commit was $age_days day(s) ago."
+          if [ "$age_days" -ge 45 ]; then
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/keepalive.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/keepalive.txt
+            git commit -m "chore: keep-alive timestamp"
+            git push
+          fi
