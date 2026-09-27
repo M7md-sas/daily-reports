@@ -1,10 +1,10 @@
 // Storage meter (12.1) and archive flow (12.2).
-import { CONFIG } from '../config.js?v=9';
-import { t } from '../i18n.js?v=9';
-import { el, fmtBytes, fmtIsoDay, todayIso, addDays, monthBounds, isoDay } from '../lib.js?v=9';
-import { planArchive, buildArchivePart, deleteArchived } from '../export/archive.js?v=9';
-import { saveBlob } from '../export/data.js?v=9';
-import { loadingBlock, errorBlock, viewHead, field, progressBar } from './ui.js?v=9';
+import { CONFIG } from '../config.js?v=10';
+import { t } from '../i18n.js?v=10';
+import { el, fmtBytes, fmtIsoDay, todayIso, addDays, monthBounds, isoDay } from '../lib.js?v=10';
+import { planArchive, buildArchivePart, deleteArchived } from '../export/archive.js?v=10';
+import { saveBlob } from '../export/data.js?v=10';
+import { loadingBlock, errorBlock, viewHead, field, progressBar } from './ui.js?v=10';
 
 const PENDING_KEY = 'dcr.archive.pending';
 const readPending = () => { try { return JSON.parse(localStorage.getItem(PENDING_KEY)); } catch { return null; } };

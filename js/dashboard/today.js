@@ -1,9 +1,9 @@
 // Today (Section 8.1): who submitted, who did not.
-import { t, getLang } from '../i18n.js?v=9';
-import { el, fmtDate, fmtTime, todayIso, dayStart, dayEndExclusive } from '../lib.js?v=9';
-import { LIST_COLS } from '../export/data.js?v=9';
-import { cardProjectName } from '../export/card.js?v=9';
-import { loadingBlock, errorBlock, viewHead, statCard } from './ui.js?v=9';
+import { t, getLang } from '../i18n.js?v=10';
+import { el, fmtDate, fmtTime, todayIso, dayStart, dayEndExclusive } from '../lib.js?v=10';
+import { LIST_COLS } from '../export/data.js?v=10';
+import { cardProjectName } from '../export/card.js?v=10';
+import { loadingBlock, errorBlock, viewHead, statCard } from './ui.js?v=10';
 
 export async function render(ctx, view, _params, isCurrent) {
   const refresh = el('button', { type: 'button', class: 'btn sm', text: '↻', 'aria-label': t('common.retry'), onclick: () => render(ctx, view, _params, isCurrent) });
