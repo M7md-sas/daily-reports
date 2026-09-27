@@ -1,6 +1,6 @@
 // Shared helpers: Supabase client, dates in Asia/Riyadh, mobile numbers, file names.
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
-import { CONFIG } from './config.js?v=7';
+import { CONFIG } from './config.js?v=8';
 
 // The consultant page must always act as anonymous, even if a manager is
 // signed in to the dashboard in the same browser — so it never persists a session.
@@ -188,7 +188,7 @@ export function el(tag, attrs = {}, ...children) {
 export function errorKey(err) {
   const msg = String(err?.message ?? err ?? '');
   const known = [
-    'invalid_team_code', 'invalid_mobile', 'invalid_name', 'device_not_allowed',
+    'invalid_team_code', 'invalid_mobile', 'device_bound_other', 'device_required', 'code_required', 'code_length', 'invalid_name', 'device_not_allowed',
     'device_not_recognized', 'mobile_taken', 'unknown_consultant', 'invalid_project',
     'invalid_project_type', 'empty_report', 'too_many_photos', 'daily_limit', 'report_conflict',
   ];

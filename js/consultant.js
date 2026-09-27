@@ -1,16 +1,29 @@
 // Consultant app (Section 7): registration + Submit Report.
-import { CONFIG } from './config.js?v=7';
-import { t, applyI18n, bindLangToggle } from './i18n.js?v=7';
+import { CONFIG } from './config.js?v=8';
+import { t, applyI18n, bindLangToggle } from './i18n.js?v=8';
 import {
   createSupabase, normalizeMobile, fmtDate, fmtTime, uuid, errorKey, PROJECT_TYPES, sleep,
-} from './lib.js?v=7';
-import { sanitizeReportHtml } from './sanitize.js?v=7';
-import { photoStore } from './idb.js?v=7';
+} from './lib.js?v=8';
+import { sanitizeReportHtml } from './sanitize.js?v=8';
+import { photoStore } from './idb.js?v=8';
 
 const sb = createSupabase({ anonymous: true });
 const $ = (id) => document.getElementById(id);
 
-const LS = { me: 'dcr.me', draft: 'dcr.draft', projects: 'dcr.projects', config: 'dcr.config' };
+const LS = { me: 'dcr.me', draft: 'dcr.draft', projects: 'dcr.projects', config: 'dcr.config', device: 'dcr.device' };
+
+// Permanent random id for this phone, kept in two places and never cleared by sign-out.
+// The server binds it to the first consultant who registers here, so one phone cannot
+// be used to register a second name.
+function deviceId() {
+  const cookie = document.cookie.split('; ').find((c) => c.startsWith('dcr_device='))?.split('=')[1];
+  let id = null;
+  try { id = localStorage.getItem(LS.device); } catch { /* blocked */ }
+  id ||= cookie || `${uuid()}${uuid()}`.replace(/-/g, '');
+  try { localStorage.setItem(LS.device, id); } catch { /* blocked */ }
+  document.cookie = `dcr_device=${id}; max-age=${60 * 60 * 24 * 3650}; path=/; SameSite=Strict; Secure`;
+  return id;
+}
 const load = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* full or blocked */ } };
 const drop = (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } };
@@ -58,6 +71,7 @@ async function boot() {
   if (S.me) {
     await enterReport();
     refreshRemote(); // update projects/config in the background
+    checkBinding();
     return;
   }
   show('screenLoading');
@@ -167,7 +181,7 @@ function wireRegister() {
         notice(t('edit.saved'), 'ok');
       } else {
         const { data, error } = await sb.rpc('register_consultant', {
-          p_full_name: name, p_mobile: mobile, p_team_code: code || null,
+          p_full_name: name, p_mobile: mobile, p_team_code: code || null, p_device_id: deviceId(),
         });
         if (error) throw error;
         S.me = {
@@ -193,6 +207,23 @@ function wireRegister() {
       btn.disabled = false;
     }
   });
+}
+
+// Ties this phone to the signed-in consultant (for accounts made before phone binding),
+// and signs out if the manager released the phone or it belongs to someone else.
+async function checkBinding() {
+  if (!S.me) return;
+  const { data, error } = await sb.rpc('bind_device', {
+    p_consultant_id: S.me.consultant_id, p_device_token: S.me.device_token, p_device_id: deviceId(),
+  });
+  if (error && errorKey(error) !== 'err.device_bound_other') return; // offline etc.: try next time
+  if (!error && data === 'ok') return;
+  if (S.pending || S.busy) return; // never interrupt an unfinished upload
+  await clearDraft();
+  if (quill) resetForm();
+  forgetMe();
+  openRegister('register');
+  showMsg($('regError'), t(error ? 'err.device_bound_other' : 'reg.released'));
 }
 
 function forgetMe() {

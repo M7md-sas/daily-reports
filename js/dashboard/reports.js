@@ -1,14 +1,14 @@
 // Reports list (Section 8.2) with combinable filters, pagination and exports (8.6).
-import { CONFIG } from '../config.js?v=7';
-import { t, getLang } from '../i18n.js?v=7';
-import { el, fmtDate, fmtTime, PROJECT_TYPES } from '../lib.js?v=7';
+import { CONFIG } from '../config.js?v=8';
+import { t, getLang } from '../i18n.js?v=8';
+import { el, fmtDate, fmtTime, PROJECT_TYPES } from '../lib.js?v=8';
 import {
   LIST_COLS, applyFilters, fetchAllReports, photoLoader, exportRange, exportBaseName, filterParts, saveBlob,
-} from '../export/data.js?v=7';
-import { cardProjectName } from '../export/card.js?v=7';
-import { buildPdf } from '../export/pdf.js?v=7';
-import { buildExcel } from '../export/excel.js?v=7';
-import { loadingBlock, errorBlock, viewHead, dataTable, combo, select, field, progressBar } from './ui.js?v=7';
+} from '../export/data.js?v=8';
+import { cardProjectName } from '../export/card.js?v=8';
+import { buildPdf } from '../export/pdf.js?v=8';
+import { buildExcel } from '../export/excel.js?v=8';
+import { loadingBlock, errorBlock, viewHead, dataTable, combo, select, field, progressBar } from './ui.js?v=8';
 
 export async function render(ctx, view, _params, isCurrent) {
   const st = (ctx.state.reports ??= { f: {}, page: 0 });

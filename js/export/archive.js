@@ -1,10 +1,10 @@
 // Archive (Section 12.2): build the ZIP in the browser, then — only after the manager
 // confirms — delete the storage objects and database rows for the range.
-import { CONFIG } from '../config.js?v=7';
-import { isoDay, addDays } from '../lib.js?v=7';
-import { fetchAllReports, photoLoader, exportBaseName, filterParts } from './data.js?v=7';
-import { buildPdf } from './pdf.js?v=7';
-import { buildExcel, assignPhotoNames, sortedPhotos } from './excel.js?v=7';
+import { CONFIG } from '../config.js?v=8';
+import { isoDay, addDays } from '../lib.js?v=8';
+import { fetchAllReports, photoLoader, exportBaseName, filterParts } from './data.js?v=8';
+import { buildPdf } from './pdf.js?v=8';
+import { buildExcel, assignPhotoNames, sortedPhotos } from './excel.js?v=8';
 
 /** Counts, size and the split into ZIP parts for a date range. */
 export async function planArchive(sb, from, to) {

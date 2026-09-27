@@ -1,13 +1,13 @@
 // Dashboard shell: sign-in, role check, hash router, shared helpers.
-import { t, applyI18n, bindLangToggle } from '../i18n.js?v=7';
-import { createSupabase, el } from '../lib.js?v=7';
-import * as today from './today.js?v=7';
-import * as reports from './reports.js?v=7';
-import * as detail from './detail.js?v=7';
-import * as projects from './projects.js?v=7';
-import * as consultants from './consultants.js?v=7';
-import * as storage from './storage.js?v=7';
-import * as admin from './admin.js?v=7';
+import { t, applyI18n, bindLangToggle } from '../i18n.js?v=8';
+import { createSupabase, el } from '../lib.js?v=8';
+import * as today from './today.js?v=8';
+import * as reports from './reports.js?v=8';
+import * as detail from './detail.js?v=8';
+import * as projects from './projects.js?v=8';
+import * as consultants from './consultants.js?v=8';
+import * as storage from './storage.js?v=8';
+import * as admin from './admin.js?v=8';
 
 const $ = (id) => document.getElementById(id);
 
