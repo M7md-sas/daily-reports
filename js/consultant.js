@@ -1,11 +1,11 @@
 // Consultant app (Section 7): registration + Submit Report.
-import { CONFIG } from './config.js?v=4';
-import { t, applyI18n, bindLangToggle } from './i18n.js?v=4';
+import { CONFIG } from './config.js?v=5';
+import { t, applyI18n, bindLangToggle } from './i18n.js?v=5';
 import {
   createSupabase, normalizeMobile, fmtDate, fmtTime, uuid, errorKey, PROJECT_TYPES, sleep,
-} from './lib.js?v=4';
-import { sanitizeReportHtml } from './sanitize.js?v=4';
-import { photoStore } from './idb.js?v=4';
+} from './lib.js?v=5';
+import { sanitizeReportHtml } from './sanitize.js?v=5';
+import { photoStore } from './idb.js?v=5';
 
 const sb = createSupabase({ anonymous: true });
 const $ = (id) => document.getElementById(id);
@@ -82,11 +82,32 @@ async function refreshRemote(throwOnError = false) {
     save(LS.config, S.config);
     save(LS.projects, S.projects);
     renderProjects();
-    $('regCodeField').hidden = S.config.access_mode === 'none' || S.regMode === 'edit';
+    syncCodeField();
   } catch (e) {
     if (throwOnError) throw e;
   }
 }
+
+// The admin can switch the team code on or off at any time, so the page re-checks
+// before registering and whenever it comes back to the screen.
+async function refreshConfig() {
+  const { data, error } = await sb.rpc('get_public_config');
+  if (error) return;
+  S.config = data;
+  save(LS.config, S.config);
+  syncCodeField();
+}
+
+/** Shows the team-code field only when the code is required; hiding it also clears it. */
+function syncCodeField() {
+  const hide = S.config.access_mode === 'none' || S.regMode === 'edit';
+  $('regCodeField').hidden = hide;
+  if (hide) $('regCode').value = '';
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshRemote();
+});
 
 function fatal(text) {
   $('fatalMsg').textContent = text;
@@ -102,7 +123,7 @@ function openRegister(mode) {
   $('regTitle').dataset.i18n = edit ? 'edit.title' : 'reg.title';
   $('regIntro').hidden = edit;
   $('regCancel').hidden = !edit;
-  $('regCodeField').hidden = edit || S.config.access_mode === 'none';
+  syncCodeField();
   $('regName').value = edit ? S.me.full_name : '';
   $('regMobile').value = edit ? S.me.mobile.replace(/^\+966/, '0') : '';
   $('regCode').value = '';
@@ -117,16 +138,22 @@ function wireRegister() {
     ev.preventDefault();
     const name = $('regName').value.trim();
     const mobile = normalizeMobile($('regMobile').value);
-    const code = $('regCode').value.trim();
     if (name.length < 2) return showMsg($('regError'), t('err.invalid_name'));
     if (!mobile) return showMsg($('regError'), t('err.invalid_mobile'));
-    if (S.regMode === 'register' && S.config.access_mode !== 'none' && !code) {
-      return showMsg($('regError'), t('err.invalid_team_code'));
-    }
 
     const btn = $('regSubmit');
     btn.disabled = true;
     showMsg($('regError'), '');
+    if (S.regMode === 'register') {
+      const wasHidden = $('regCodeField').hidden;
+      await refreshConfig();
+      if (!$('regCodeField').hidden && (wasHidden || !$('regCode').value.trim())) {
+        btn.disabled = false;
+        $('regCode').focus();
+        return showMsg($('regError'), t('reg.codeNeeded'));
+      }
+    }
+    const code = $('regCode').value.trim();
     try {
       if (S.regMode === 'edit') {
         const { data, error } = await sb.rpc('update_my_details', {
@@ -156,6 +183,10 @@ function wireRegister() {
       if (key === 'err.device_not_recognized') {
         forgetMe();
         openRegister('register');
+      }
+      if (key === 'err.invalid_team_code') {
+        await refreshConfig();
+        if (!$('regCodeField').hidden) $('regCode').focus();
       }
       showMsg($('regError'), t(key));
     } finally {
