@@ -137,6 +137,13 @@ python -m http.server 8610
 
 Then open <http://localhost:8610/> (consultant) and <http://localhost:8610/dashboard.html>. The local site talks to the same Supabase project, so test data you submit is real data — delete or archive it afterwards.
 
+### Publishing an update
+GitHub Pages lets browsers cache files for 10 minutes. Every local link carries a version (`?v=3`); after changing code, bump it everywhere so phones load the new files at once:
+
+```bash
+grep -rl "?v=3" index.html dashboard.html js | xargs sed -i "s/?v=3/?v=4/g"
+```
+
 ## 6. Browser support
 
 Latest Chrome, Edge, Safari (iOS 16+) and Samsung Internet. Photos are compressed on the phone before upload (max 1600 px, JPEG, ~300 KB). PDF export and archiving are intended for a desktop browser; they also work on recent phones for small ranges.

@@ -1,6 +1,6 @@
 // Excel export (Section 10.2): one sheet, one row per report, no special styling.
-import { fmtDate, fmtTime, photoArchivePath } from '../lib.js';
-import { cardProjectName } from './card.js';
+import { fmtDate, fmtTime, photoArchivePath } from '../lib.js?v=3';
+import { cardProjectName } from './card.js?v=3';
 
 const MAX_CELL = 32000; // Excel's hard limit is 32,767 characters per cell.
 

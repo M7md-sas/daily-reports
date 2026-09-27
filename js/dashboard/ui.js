@@ -1,6 +1,6 @@
 // Small UI building blocks shared by the dashboard views.
-import { t } from '../i18n.js';
-import { el } from '../lib.js';
+import { t } from '../i18n.js?v=3';
+import { el } from '../lib.js?v=3';
 
 export function loadingBlock() {
   return el('div', { class: 'center-state' }, el('span', { class: 'spinner' }), el('p', { text: t('common.loading') }));
