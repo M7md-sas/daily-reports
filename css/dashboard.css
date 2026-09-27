@@ -147,3 +147,14 @@ table.data .num { font-variant-numeric: tabular-nums; }
 }
 
 .center-link { text-align: center; margin: 14px 0 0; }
+
+/* Password field with a show/hide eye button */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap .input { padding-inline-end: 52px; }
+.pw-eye {
+  position: absolute; top: 50%; inset-inline-end: 4px; transform: translateY(-50%);
+  width: 44px; height: 40px; border: 0; background: none; border-radius: 6px;
+  color: var(--muted); cursor: pointer; display: grid; place-items: center;
+}
+.pw-eye:hover { color: var(--accent); background: var(--zebra); }
+.pw-eye:focus-visible { outline: 3px solid rgba(47, 93, 138, .35); }

@@ -1,11 +1,11 @@
 // Report detail (Section 8.3): the PDF card layout, with photos via short-lived signed URLs.
-import { CONFIG } from '../config.js?v=3';
-import { t, getLang } from '../i18n.js?v=3';
-import { el } from '../lib.js?v=3';
-import { FULL_COLS } from '../export/data.js?v=3';
-import { sortedPhotos } from '../export/excel.js?v=3';
-import { buildCard } from '../export/card.js?v=3';
-import { loadingBlock, errorBlock } from './ui.js?v=3';
+import { CONFIG } from '../config.js?v=4';
+import { t, getLang } from '../i18n.js?v=4';
+import { el } from '../lib.js?v=4';
+import { FULL_COLS } from '../export/data.js?v=4';
+import { sortedPhotos } from '../export/excel.js?v=4';
+import { buildCard } from '../export/card.js?v=4';
+import { loadingBlock, errorBlock } from './ui.js?v=4';
 
 export async function render(ctx, view, [id], isCurrent) {
   const back = el('a', { class: 'btn sm', href: '#reports', text: `← ${t('rd.back')}` });

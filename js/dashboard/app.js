@@ -1,13 +1,13 @@
 // Dashboard shell: sign-in, role check, hash router, shared helpers.
-import { t, applyI18n, bindLangToggle } from '../i18n.js?v=3';
-import { createSupabase, el } from '../lib.js?v=3';
-import * as today from './today.js?v=3';
-import * as reports from './reports.js?v=3';
-import * as detail from './detail.js?v=3';
-import * as projects from './projects.js?v=3';
-import * as consultants from './consultants.js?v=3';
-import * as storage from './storage.js?v=3';
-import * as admin from './admin.js?v=3';
+import { t, applyI18n, bindLangToggle } from '../i18n.js?v=4';
+import { createSupabase, el } from '../lib.js?v=4';
+import * as today from './today.js?v=4';
+import * as reports from './reports.js?v=4';
+import * as detail from './detail.js?v=4';
+import * as projects from './projects.js?v=4';
+import * as consultants from './consultants.js?v=4';
+import * as storage from './storage.js?v=4';
+import * as admin from './admin.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 
@@ -68,7 +68,34 @@ export const ctx = {
 
 // ---------------------------------------------------------------- auth
 
+// Eye button inside every password field: show / hide what was typed.
+const EYE = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-2.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.6 7.8 2.5 9.6 2 12c1 2.5 5 7 10 7 1.9 0 3.6-.6 5-1.5l3.7 3.7L22 20 3.3 2zM12 16.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.6.6-2.2l1.9 1.9a2 2 0 0 0 2.3 2.3l1.9 1.9c-.6.4-1.4.6-2.2.6zM12 5c-1.3 0-2.6.3-3.7.8l2.1 2.1c.5-.2 1-.4 1.6-.4a4.5 4.5 0 0 1 4.5 4.5c0 .6-.1 1.1-.4 1.6l3 3c1.4-1.2 2.4-2.6 2.9-3.6-1-2.5-5-8-10-8z"/></svg>';
+function setReveal(input, btn, show) {
+  input.type = show ? 'text' : 'password';
+  btn.innerHTML = show ? EYE_OFF : EYE;
+  btn.setAttribute('aria-label', t(show ? 'auth.hidePw' : 'auth.showPw'));
+  btn.setAttribute('aria-pressed', String(show));
+}
+document.querySelectorAll('input[type="password"]').forEach((input) => {
+  const wrap = el('span', { class: 'pw-wrap' });
+  input.replaceWith(wrap);
+  const btn = el('button', { type: 'button', class: 'pw-eye' });
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    setReveal(input, btn, input.type === 'password');
+    input.focus();
+  });
+  wrap.append(input, btn);
+  setReveal(input, btn, false);
+});
+function hidePasswords() {
+  document.querySelectorAll('.pw-wrap').forEach((w) => setReveal(w.querySelector('input'), w.querySelector('.pw-eye'), false));
+}
+window.addEventListener('langchange', hidePasswords);
+
 function showOnly(id) {
+  hidePasswords();
   ['loading', 'login', 'recovery', 'view'].forEach((s) => { $(s).hidden = s !== id; });
 }
 

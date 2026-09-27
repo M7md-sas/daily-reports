@@ -1,8 +1,8 @@
 // Admin section (8.8) — admin role only (also enforced by RLS on app_settings).
-import { CONFIG } from '../config.js?v=3';
-import { t } from '../i18n.js?v=3';
-import { el, fmtDateTime, fmtIsoDay, fmtBytes } from '../lib.js?v=3';
-import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=3';
+import { CONFIG } from '../config.js?v=4';
+import { t } from '../i18n.js?v=4';
+import { el, fmtDateTime, fmtIsoDay, fmtBytes } from '../lib.js?v=4';
+import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=4';
 
 const MODES = ['none', 'team_code', 'team_code_device'];
 
