@@ -1,6 +1,6 @@
 // Shared helpers: Supabase client, dates in Asia/Riyadh, mobile numbers, file names.
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
-import { CONFIG } from './config.js?v=5';
+import { CONFIG } from './config.js?v=7';
 
 // The consultant page must always act as anonymous, even if a manager is
 // signed in to the dashboard in the same browser — so it never persists a session.

@@ -1,7 +1,7 @@
 // Consultants (Section 8.5): registrations, last submission, Active toggle.
-import { t } from '../i18n.js?v=5';
-import { el, fmtDate, fmtDateTime } from '../lib.js?v=5';
-import { loadingBlock, errorBlock, viewHead, dataTable } from './ui.js?v=5';
+import { t } from '../i18n.js?v=7';
+import { el, fmtDate, fmtDateTime } from '../lib.js?v=7';
+import { loadingBlock, errorBlock, viewHead, dataTable } from './ui.js?v=7';
 
 export async function render(ctx, view, _params, isCurrent) {
   view.replaceChildren(viewHead(t('nav.consultants')), loadingBlock());

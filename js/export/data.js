@@ -1,7 +1,7 @@
 // Report queries shared by the list, exports and the archive.
-import { CONFIG } from '../config.js?v=5';
-import { dayStart, dayEndExclusive, isoDay, mapLimit, fmtIsoDay } from '../lib.js?v=5';
-import { sortedPhotos } from './excel.js?v=5';
+import { CONFIG } from '../config.js?v=7';
+import { dayStart, dayEndExclusive, isoDay, mapLimit, fmtIsoDay } from '../lib.js?v=7';
+import { sortedPhotos } from './excel.js?v=7';
 
 export const LIST_COLS =
   'id, consultant_id, consultant_name_snapshot, consultant_mobile_snapshot, project_type, project_id, project_other_name, photo_count, photos_expected, submitted_at, projects(name)';

@@ -1,11 +1,11 @@
 // Consultant app (Section 7): registration + Submit Report.
-import { CONFIG } from './config.js?v=5';
-import { t, applyI18n, bindLangToggle } from './i18n.js?v=5';
+import { CONFIG } from './config.js?v=7';
+import { t, applyI18n, bindLangToggle } from './i18n.js?v=7';
 import {
   createSupabase, normalizeMobile, fmtDate, fmtTime, uuid, errorKey, PROJECT_TYPES, sleep,
-} from './lib.js?v=5';
-import { sanitizeReportHtml } from './sanitize.js?v=5';
-import { photoStore } from './idb.js?v=5';
+} from './lib.js?v=7';
+import { sanitizeReportHtml } from './sanitize.js?v=7';
+import { photoStore } from './idb.js?v=7';
 
 const sb = createSupabase({ anonymous: true });
 const $ = (id) => document.getElementById(id);
@@ -200,6 +200,22 @@ function forgetMe() {
   drop(LS.me);
 }
 
+// Sign out on this phone: forget the identity and any unsent draft, so the next
+// person using the phone starts clean. Reports already sent stay on the server.
+async function logout() {
+  if (S.busy) return;
+  const hasDraft = !!(S.pending || S.photos.length || quill?.getText().trim());
+  let question = t('logout.confirm');
+  if (S.pending) question += `\n\n${t('logout.pending')}`;
+  else if (hasDraft) question += `\n\n${t('logout.draft')}`;
+  if (S.config.access_mode === 'team_code_device') question += `\n\n${t('logout.deviceLock')}`;
+  if (!window.confirm(question)) return;
+  await clearDraft();
+  if (quill) resetForm();
+  forgetMe();
+  openRegister('register');
+}
+
 // ---------------------------------------------------------------- report screen
 
 function notice(text, kind) {
@@ -265,6 +281,7 @@ function wireReport() {
   $('photoGallery').addEventListener('change', onPhotosPicked);
   $('reportForm').addEventListener('submit', (e) => { e.preventDefault(); submit(); });
   $('editDetails').addEventListener('click', () => openRegister('edit'));
+  $('logoutBtn').addEventListener('click', logout);
   $('anotherBtn').addEventListener('click', () => {
     resetForm();
     show('screenReport');
