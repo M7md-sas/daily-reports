@@ -56,3 +56,15 @@ Deliberate differences from the specification, and why. Read this before “fixi
 
 27. Fonts are **self-hosted** in `fonts/` instead of loaded from Google Fonts (no third-party requests; also needed for html2canvas).
 28. The spec's Section 4 refers to “Section 9.6” for the Admin section; the correct section is 8.8.
+
+## Changes after the three-way review (27 Sep 2026)
+
+29. **One phone = one consultant, always.** Every phone keeps a permanent random id (`dcr.device`, also a cookie; kept across sign-out). A registered mobile can be used again only from its own phone, or after the manager taps **Allow new phone**; a phone already bound to someone cannot register a second name. **Release phone** (Consultants screen) frees a phone that changed hands. This replaces the separate `team_code_device` mode (treated as `team_code`). Honest limit: clearing site data, private mode or another browser looks like a new phone — no website can prevent that without SMS verification (paid).
+30. **Submitting and attaching photos always require the phone's token**, and nothing about an existing consultant (not even the name) is returned to an unknown phone — this closes the identity-takeover path found in review.
+31. **The consultant can change only the name** in "Edit my details". The mobile number is the identity; changes go through the manager.
+32. **The manager can read and set the team code** (Consultants screen) — nothing else from the admin settings. Minimum 6 characters.
+33. **Server-side limits**: wrong team codes are counted (20 per 10 minutes, then refused), 30 new consultants per day, 200 reports per hour, uploads stop at 950 MB of photos, report HTML ≤ 60,000 characters and checked against the allow-list on the server; `body_text` is now derived from the HTML on the server.
+34. **Photo upload window is 3 days** (was 2). If photos still cannot be uploaded, the consultant can tap **Finish without the remaining photos**. Before a report is confirmed by the server the form is frozen, so a lost reply can no longer lose edits or break retries; photo slots are fixed (`n.jpg`) and never renumbered.
+35. **Archive**: the newest day that can be archived is 4 days ago. Every storage object in the range goes into the ZIP (leftover uploads under `Unattached/`), deletion removes exactly what was zipped (report rows first, then files), large ranges download one ZIP per click, and deletion unlocks only after every part was saved. Report rows of today cannot be deleted by staff at all.
+36. **All libraries are served from `vendor/`** (no CDN at run time) and both pages carry a strict Content-Security-Policy. The dashboard session is kept per tab (`sessionStorage`) because `m7md-sas.github.io` is shared with the owner's other GitHub Pages sites; changing the password from the dashboard requires the current password.
+37. Big PDF exports ask for confirmation (over 30 reports) and are refused on phones over 50 reports. Excel dates are real date cells. Network requests time out (30 s, 2 min for photos) so the Retry path takes over.

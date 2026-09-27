@@ -1,8 +1,8 @@
 // Consultants (Section 8.5): registrations, last submission, Active toggle,
 // plus the team access code (manager may change it) and releasing a phone.
-import { t } from '../i18n.js?v=8';
-import { el, fmtDate, fmtDateTime, errorKey } from '../lib.js?v=8';
-import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=8';
+import { t } from '../i18n.js?v=9';
+import { el, fmtDate, fmtDateTime, errorKey } from '../lib.js?v=9';
+import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=9';
 
 export async function render(ctx, view, _params, isCurrent) {
   view.replaceChildren(viewHead(t('nav.consultants')), loadingBlock());
@@ -18,7 +18,6 @@ export async function render(ctx, view, _params, isCurrent) {
   }
   const data = list.data;
   const mode = codeRes.data.access_mode;
-  const deviceLock = mode === 'team_code_device';
 
   // ---------------------------------------------------------------- team code
   const codeIn = el('input', {
@@ -86,7 +85,7 @@ export async function render(ctx, view, _params, isCurrent) {
         } else {
           box.append(el('span', { class: 'pill muted', text: t('cs.unbound') }));
         }
-        if (deviceLock) {
+        {
           box.append(c.allow_new_device
             ? el('span', { class: 'pill', text: t('cs.deviceAllowed') })
             : el('button', {

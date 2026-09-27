@@ -1,10 +1,11 @@
 // Admin section (8.8) — admin role only (also enforced by RLS on app_settings).
-import { CONFIG } from '../config.js?v=8';
-import { t } from '../i18n.js?v=8';
-import { el, fmtDateTime, fmtIsoDay, fmtBytes } from '../lib.js?v=8';
-import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=8';
+import { CONFIG } from '../config.js?v=9';
+import { t } from '../i18n.js?v=9';
+import { el, fmtDateTime, fmtIsoDay, fmtBytes } from '../lib.js?v=9';
+import { loadingBlock, errorBlock, viewHead, dataTable, field } from './ui.js?v=9';
 
-const MODES = ['none', 'team_code', 'team_code_device'];
+// Phone binding is always enforced now, so the old 'team_code_device' mode equals 'team_code'.
+const MODES = ['none', 'team_code'];
 
 export async function render(ctx, view, _params, isCurrent) {
   view.replaceChildren(viewHead(t('nav.admin')), loadingBlock());
@@ -22,7 +23,7 @@ export async function render(ctx, view, _params, isCurrent) {
 
   // ---------------------------------------------------------------- access protection
   const s = settings.data;
-  let mode = s.access_mode;
+  let mode = s.access_mode === 'team_code_device' ? 'team_code' : s.access_mode;
   const code = el('input', { class: 'input', value: s.team_code ?? '', maxlength: 64, autocomplete: 'off', dir: 'ltr' });
   const maxPerDay = el('input', { class: 'input', type: 'number', min: 1, max: 200, value: s.max_reports_per_day });
   const msg = el('div');

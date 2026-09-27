@@ -150,4 +150,5 @@ Latest Chrome, Edge, Safari (iOS 16+) and Samsung Internet. Photos are compresse
 
 ## 7. Libraries (all free / MIT or Apache)
 
+All are copied into `vendor/` and served from this site (no CDN at run time):
 supabase-js 2.117.2 · Quill 2.0.3 · DOMPurify 3.2.6 · browser-image-compression 2.0.2 · html2canvas 1.4.1 · jsPDF 2.5.2 · SheetJS CE 0.20.3 · JSZip 3.10.1 · FileSaver 2.0.5 · Inter & Noto Naskh Arabic (SIL OFL, self-hosted). No analytics or trackers.

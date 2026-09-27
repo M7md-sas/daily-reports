@@ -158,3 +158,6 @@ table.data .num { font-variant-numeric: tabular-nums; }
 }
 .pw-eye:hover { color: var(--accent); background: var(--zebra); }
 .pw-eye:focus-visible { outline: 3px solid rgba(47, 93, 138, .35); }
+
+.part-list { display: grid; gap: 10px; margin: 14px 0; }
+.part-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

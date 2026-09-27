@@ -1,13 +1,13 @@
 // Dashboard shell: sign-in, role check, hash router, shared helpers.
-import { t, applyI18n, bindLangToggle } from '../i18n.js?v=8';
-import { createSupabase, el } from '../lib.js?v=8';
-import * as today from './today.js?v=8';
-import * as reports from './reports.js?v=8';
-import * as detail from './detail.js?v=8';
-import * as projects from './projects.js?v=8';
-import * as consultants from './consultants.js?v=8';
-import * as storage from './storage.js?v=8';
-import * as admin from './admin.js?v=8';
+import { t, applyI18n, bindLangToggle } from '../i18n.js?v=9';
+import { createSupabase, el } from '../lib.js?v=9';
+import * as today from './today.js?v=9';
+import * as reports from './reports.js?v=9';
+import * as detail from './detail.js?v=9';
+import * as projects from './projects.js?v=9';
+import * as consultants from './consultants.js?v=9';
+import * as storage from './storage.js?v=9';
+import * as admin from './admin.js?v=9';
 
 const $ = (id) => document.getElementById(id);
 
@@ -24,11 +24,11 @@ const ROUTES = { today, reports, report: detail, projects, consultants, storage,
 
 // Export libraries are large, so they load only when first needed.
 const LIBS = {
-  html2canvas: ['https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js', () => window.html2canvas],
-  jspdf: ['https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js', () => window.jspdf],
-  xlsx: ['https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', () => window.XLSX],
-  jszip: ['https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js', () => window.JSZip],
-  filesaver: ['https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js', () => window.saveAs],
+  html2canvas: ['vendor/html2canvas.min.js', () => window.html2canvas],
+  jspdf: ['vendor/jspdf.umd.min.js', () => window.jspdf],
+  xlsx: ['vendor/xlsx.full.min.js', () => window.XLSX],
+  jszip: ['vendor/jszip.min.js', () => window.JSZip],
+  filesaver: ['vendor/FileSaver.min.js', () => window.saveAs],
 };
 const libPromises = {};
 function loadLibs(...names) {
@@ -120,9 +120,15 @@ function showRecovery(fromDashboard = false) {
   $('changePwBtn').hidden = true;
   $('recoveryError').hidden = true;
   $('recoveryCancel').hidden = !fromDashboard;
+  // From the dashboard the current password is required, so a stolen session alone
+  // cannot lock the owner out. From an emailed recovery link it is not (it was forgotten).
+  $('currentPasswordField').hidden = !fromDashboard;
+  $('currentPassword').value = '';
+  recoveryFromDashboard = fromDashboard;
   showOnly('recovery');
-  $('newPassword').focus();
+  (fromDashboard ? $('currentPassword') : $('newPassword')).focus();
 }
+let recoveryFromDashboard = false;
 
 $('changePwBtn').addEventListener('click', () => showRecovery(true));
 $('recoveryCancel').addEventListener('click', () => {
@@ -156,6 +162,15 @@ $('recoveryForm').addEventListener('submit', async (e) => {
   if (p1.length < 8) return fail('auth.newTooShort');
   if (p1 !== p2) return fail('auth.newMismatch');
   $('recoveryBtn').disabled = true;
+  if (recoveryFromDashboard) {
+    const { error: wrong } = await sb.auth.signInWithPassword({
+      email: ctx.user.email, password: $('currentPassword').value,
+    });
+    if (wrong) {
+      $('recoveryBtn').disabled = false;
+      return fail('auth.currentWrong');
+    }
+  }
   const { data, error } = await sb.auth.updateUser({ password: p1 });
   $('recoveryBtn').disabled = false;
   if (error) {
@@ -165,6 +180,7 @@ $('recoveryForm').addEventListener('submit', async (e) => {
   }
   $('newPassword').value = '';
   $('newPassword2').value = '';
+  $('currentPassword').value = '';
   toast(t('auth.newSaved'));
   enter(data.user);
 });
@@ -237,6 +253,9 @@ function route() {
 
 async function boot() {
   window.__dcrBooted = true;
+  // Older versions kept the session in localStorage, readable by every site on the shared
+  // github.io origin; remove it (the session now lives in this tab only).
+  try { localStorage.removeItem('dcr-dashboard-auth'); } catch { /* ignore */ }
   applyI18n();
   bindLangToggle($('langToggle'));
   window.addEventListener('hashchange', route);

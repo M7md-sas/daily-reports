@@ -74,3 +74,5 @@ form[aria-busy="true"] .type-btn, form[aria-busy="true"] .photo-actions, form[ar
 .identity-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .identity-actions .linkbtn { white-space: nowrap; }
 #logoutBtn { color: var(--danger); }
+
+#finishBtn { display: block; margin-top: 10px; }

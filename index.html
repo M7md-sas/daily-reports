@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#2F5D8A">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://klhqyozldjtnduopsouc.supabase.co; font-src 'self'; connect-src 'self' https://klhqyozldjtnduopsouc.supabase.co; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
   <title>Daily Consultant Reports</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
-  <link rel="stylesheet" href="css/base.css?v=8">
-  <link rel="stylesheet" href="css/consultant.css?v=8">
-  <script defer src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-  <script type="module" src="js/consultant.js?v=8"></script>
+  <link rel="stylesheet" href="vendor/quill.snow.css">
+  <link rel="stylesheet" href="css/base.css?v=9">
+  <link rel="stylesheet" href="css/consultant.css?v=9">
+  <script defer src="js/fallback.js?v=9"></script>
+  <script defer src="vendor/supabase.js"></script>
+  <script defer src="vendor/quill.js"></script>
+  <script defer src="vendor/purify.min.js"></script>
+  <script defer src="vendor/browser-image-compression.js"></script>
+  <script type="module" src="js/consultant.js?v=9"></script>
 </head>
 <body>
   <header class="topbar">
@@ -26,16 +30,6 @@
       <span class="spinner"></span>
       <p data-i18n="common.loading">Loading…</p>
     </section>
-    <script>
-      // If a library fails to download, the app never starts: offer a reload instead of spinning forever.
-      setTimeout(function () {
-        var l = document.getElementById('screenLoading');
-        if (l && !l.hidden && !window.__dcrBooted) {
-          l.innerHTML = '<p>Could not load the page. Check your connection.<br><span lang="ar" dir="rtl">تعذّر تحميل الصفحة. تأكد من الاتصال.</span></p>' +
-            '<button type="button" class="btn primary" onclick="location.reload()">Retry / إعادة المحاولة</button>';
-        }
-      }, 15000);
-    </script>
     <section id="screenFatal" class="center-state" hidden>
       <p id="fatalMsg"></p>
       <button type="button" class="btn primary" id="fatalRetry" data-i18n="common.retry">Retry</button>
@@ -53,7 +47,7 @@
         <label class="field">
           <span class="label" data-i18n="reg.mobile">Mobile Number</span>
           <input class="input" id="regMobile" name="mobile" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required data-i18n-ph="reg.mobile.ph">
-          <span class="hint" data-i18n="reg.mobile.hint"></span>
+          <span class="hint" id="regMobileHint" data-i18n="reg.mobile.hint"></span>
         </label>
         <label class="field" id="regCodeField" hidden>
           <span class="label" data-i18n="reg.code">Team Access Code</span>
@@ -134,6 +128,7 @@
         <div id="pendingBox" class="msg warn" hidden>
           <strong data-i18n="pending.title"></strong>
           <div data-i18n="pending.hint"></div>
+          <button type="button" class="linkbtn" id="finishBtn" data-i18n="pending.finish" hidden>Finish without the remaining photos</button>
         </div>
         <div id="submitError" class="msg error" role="alert" hidden></div>
         <div id="progressBox" class="progress-box" hidden>
@@ -154,6 +149,7 @@
       <h1 data-i18n="ok.title">Report submitted</h1>
       <p class="muted" data-i18n="ok.recorded">Recorded on</p>
       <p class="success-when"><span id="okDate"></span><br><span id="okTime" class="success-time"></span></p>
+      <div id="okWarn" class="msg warn" role="status" hidden></div>
       <button type="button" class="btn primary lg block" id="anotherBtn" data-i18n="ok.another">Submit another report</button>
     </section>
   </main>

@@ -1,14 +1,14 @@
 // Reports list (Section 8.2) with combinable filters, pagination and exports (8.6).
-import { CONFIG } from '../config.js?v=8';
-import { t, getLang } from '../i18n.js?v=8';
-import { el, fmtDate, fmtTime, PROJECT_TYPES } from '../lib.js?v=8';
+import { CONFIG } from '../config.js?v=9';
+import { t, getLang } from '../i18n.js?v=9';
+import { el, fmtDate, fmtTime, PROJECT_TYPES } from '../lib.js?v=9';
 import {
   LIST_COLS, applyFilters, fetchAllReports, photoLoader, exportRange, exportBaseName, filterParts, saveBlob,
-} from '../export/data.js?v=8';
-import { cardProjectName } from '../export/card.js?v=8';
-import { buildPdf } from '../export/pdf.js?v=8';
-import { buildExcel } from '../export/excel.js?v=8';
-import { loadingBlock, errorBlock, viewHead, dataTable, combo, select, field, progressBar } from './ui.js?v=8';
+} from '../export/data.js?v=9';
+import { cardProjectName } from '../export/card.js?v=9';
+import { buildPdf } from '../export/pdf.js?v=9';
+import { buildExcel } from '../export/excel.js?v=9';
+import { loadingBlock, errorBlock, viewHead, dataTable, combo, select, field, progressBar } from './ui.js?v=9';
 
 export async function render(ctx, view, _params, isCurrent) {
   const st = (ctx.state.reports ??= { f: {}, page: 0 });
@@ -63,10 +63,10 @@ export async function render(ctx, view, _params, isCurrent) {
     [{ label: t('common.all'), value: '' }, ...PROJECT_TYPES.map((x) => ({ label: t(`type.${x}`), value: x }))],
     f.type, (v) => {
       if (v) f.type = v; else delete f.type;
-      // Drop a project filter that belongs to another type.
-      const p = projs.data.find((x) => `p:${x.id}` === f.project);
-      if (p && v && p.type !== v) delete f.project;
-      const fresh = select(projectOptions(), f.project, (val) => setFilter('project', val));
+      const opts = projectOptions();
+      const offered = opts.flatMap((o) => (o.group ? o.options : [o])).map((o) => o.value);
+      if (f.project && !offered.includes(f.project)) delete f.project;
+      const fresh = select(opts, f.project, (val) => setFilter('project', val));
       projSelect.replaceWith(fresh);
       projSelect = fresh;
       st.page = 0;
@@ -132,6 +132,11 @@ export async function render(ctx, view, _params, isCurrent) {
     });
 
     const total = count ?? 0;
+    if (total > 0 && from >= total) {
+      st.page = Math.floor((total - 1) / CONFIG.PAGE_SIZE);
+      load();
+      return;
+    }
     const a = total ? from + 1 : 0;
     const b = Math.min(from + CONFIG.PAGE_SIZE, total);
     const prev = el('button', { type: 'button', class: 'btn sm', text: t('common.prev'), disabled: st.page === 0, onclick: () => { st.page--; load(); } });
@@ -164,6 +169,13 @@ export async function render(ctx, view, _params, isCurrent) {
       const range = exportRange(f, rows);
       const base = exportBaseName('Daily_Reports', range);
       if (kind === 'pdf') {
+        const photos = rows.reduce((n, r) => n + (r.report_photos?.length ?? 0), 0);
+        const phone = window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 1000;
+        if (phone && rows.length > 50) {
+          ctx.toast(t('exp.tooBigPhone', { r: rows.length }));
+          return;
+        }
+        if (rows.length > 30 && !window.confirm(t('exp.confirmBig', { r: rows.length, p: photos }))) return;
         const blob = await buildPdf({
           reports: rows,
           filterParts: filterParts(f, labels(), rows.length, range),

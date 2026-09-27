@@ -1,14 +1,31 @@
 // Shared helpers: Supabase client, dates in Asia/Riyadh, mobile numbers, file names.
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
-import { CONFIG } from './config.js?v=8';
+// supabase-js 2.117.2 comes from vendor/supabase.js (a plain script loaded before this module).
+import { CONFIG } from './config.js?v=9';
 
 // The consultant page must always act as anonymous, even if a manager is
 // signed in to the dashboard in the same browser — so it never persists a session.
+// A stalled request on a weak mobile network must not freeze the screen: give up after a
+// while so the normal Retry path takes over. Photo uploads/downloads get longer.
+function fetchWithTimeout(input, init = {}) {
+  const url = String(input?.url ?? input);
+  const ms = /\/storage\/v1\/object\//.test(url) ? 120000 : 30000;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'TimeoutError')), ms);
+  if (init.signal) init.signal.addEventListener('abort', () => ctrl.abort(init.signal.reason), { once: true });
+  return fetch(input, { ...init, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 export function createSupabase({ anonymous = false } = {}) {
-  return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+  return window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+    global: { fetch: fetchWithTimeout },
     auth: anonymous
       ? { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-      : { persistSession: true, autoRefreshToken: true, storageKey: 'dcr-dashboard-auth' },
+      : {
+        // Per-tab storage: other sites on the shared github.io origin cannot read the session
+        // from another tab (the manager signs in again in a new tab).
+        persistSession: true, autoRefreshToken: true, storageKey: 'dcr-dashboard-auth',
+        storage: window.sessionStorage,
+      },
   });
 }
 
@@ -191,9 +208,10 @@ export function errorKey(err) {
     'invalid_team_code', 'invalid_mobile', 'device_bound_other', 'device_required', 'code_required', 'code_length', 'invalid_name', 'device_not_allowed',
     'device_not_recognized', 'mobile_taken', 'unknown_consultant', 'invalid_project',
     'invalid_project_type', 'empty_report', 'too_many_photos', 'daily_limit', 'report_conflict',
+    'upload_refused', 'photos_missing_locally', 'rate_limited', 'bad_html', 'mobile_change_manager', 'unknown_report',
   ];
   const hit = known.find((k) => msg.includes(k));
   if (hit) return `err.${hit}`;
-  if (/Failed to fetch|NetworkError|network|Load failed|timeout/i.test(msg)) return 'err.network';
+  if (/Failed to fetch|NetworkError|network|Load failed|timeout|abort/i.test(msg)) return 'err.network';
   return 'err.generic';
 }

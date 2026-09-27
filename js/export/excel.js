@@ -1,6 +1,6 @@
 // Excel export (Section 10.2): one sheet, one row per report, no special styling.
-import { fmtDate, fmtTime, photoArchivePath } from '../lib.js?v=8';
-import { cardProjectName } from './card.js?v=8';
+import { fmtTime, isoDay, photoArchivePath } from '../lib.js?v=9';
+import { cardProjectName } from './card.js?v=9';
 
 const MAX_CELL = 32000; // Excel's hard limit is 32,767 characters per cell.
 
@@ -30,7 +30,7 @@ export function buildExcel(reports, names = assignPhotoNames(reports)) {
   const rows = reports.map((r) => {
     const photos = sortedPhotos(r);
     return [
-      fmtDate(r.submitted_at),
+      { t: 'd', v: new Date(`${isoDay(r.submitted_at)}T00:00:00Z`), z: 'dd mmm yyyy' },
       fmtTime(r.submitted_at),
       r.consultant_name_snapshot,
       r.consultant_mobile_snapshot,
@@ -46,7 +46,7 @@ export function buildExcel(reports, names = assignPhotoNames(reports)) {
   ws['!autofilter'] = { ref: `A1:I${rows.length + 1}` };
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Reports');
-  const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array', compression: true });
+  const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array', compression: true, cellDates: true });
   return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
 
