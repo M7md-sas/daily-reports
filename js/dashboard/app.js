@@ -77,6 +77,7 @@ function showLogin(message, info) {
   ctx.role = null;
   $('nav').hidden = true;
   $('logoutBtn').hidden = true;
+  $('changePwBtn').hidden = true;
   showOnly('login');
   const err = $('loginError');
   err.textContent = message ?? '';
@@ -85,13 +86,23 @@ function showLogin(message, info) {
   $('loginInfo').hidden = !info;
 }
 
-function showRecovery() {
+// fromDashboard: a signed-in user changing their password (no email needed), so Cancel goes back.
+function showRecovery(fromDashboard = false) {
   $('nav').hidden = true;
   $('logoutBtn').hidden = true;
+  $('changePwBtn').hidden = true;
   $('recoveryError').hidden = true;
+  $('recoveryCancel').hidden = !fromDashboard;
   showOnly('recovery');
   $('newPassword').focus();
 }
+
+$('changePwBtn').addEventListener('click', () => showRecovery(true));
+$('recoveryCancel').addEventListener('click', () => {
+  $('newPassword').value = '';
+  $('newPassword2').value = '';
+  if (ctx.user) enter(ctx.user);
+});
 
 // "Forgot password?" — emails a link that comes back to this page.
 $('forgotBtn').addEventListener('click', async () => {
@@ -146,6 +157,7 @@ async function enter(user) {
   $('navAdmin').hidden = ctx.role !== 'admin';
   $('nav').hidden = false;
   $('logoutBtn').hidden = false;
+  $('changePwBtn').hidden = false;
   showOnly('view');
   route();
 }

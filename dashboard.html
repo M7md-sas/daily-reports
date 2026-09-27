@@ -16,6 +16,7 @@
   <header class="topbar">
     <div class="brand"><span data-i18n="app.name">Daily Consultant Reports</span></div>
     <button type="button" class="lang-toggle" id="langToggle"></button>
+    <button type="button" class="btn sm" id="changePwBtn" data-i18n="auth.changePw" hidden>Change password</button>
     <button type="button" class="btn sm" id="logoutBtn" data-i18n="auth.logout" hidden>Sign out</button>
   </header>
   <nav class="nav" id="nav" hidden>
@@ -74,6 +75,7 @@
         </label>
         <div id="recoveryError" class="msg error" role="alert" hidden></div>
         <button type="submit" class="btn primary lg block" id="recoveryBtn" data-i18n="auth.newSave">Save password</button>
+        <p class="center-link"><button type="button" class="linkbtn" id="recoveryCancel" data-i18n="common.cancel" hidden>Cancel</button></p>
       </form>
     </section>
 
