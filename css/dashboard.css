@@ -145,3 +145,5 @@ table.data .num { font-variant-numeric: tabular-nums; }
   .detail .pcell { height: 220px; }
   .detail .pcell.empty { display: none; }
 }
+
+.center-link { text-align: center; margin: 14px 0 0; }

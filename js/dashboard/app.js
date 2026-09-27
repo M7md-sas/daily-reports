@@ -10,6 +10,14 @@ import * as storage from './storage.js';
 import * as admin from './admin.js';
 
 const $ = (id) => document.getElementById(id);
+
+// Read the URL before supabase-js consumes it: a password-recovery link arrives as
+// #access_token=…&type=recovery, an expired one as #error=…&error_code=otp_expired.
+const INITIAL_HASH = new URLSearchParams(location.hash.slice(1));
+const ARRIVED_FOR_RECOVERY = INITIAL_HASH.get('type') === 'recovery';
+const LINK_ERROR = INITIAL_HASH.get('error_code') || INITIAL_HASH.get('error');
+if (LINK_ERROR) history.replaceState(null, '', location.pathname);
+
 const sb = createSupabase();
 
 const ROUTES = { today, reports, report: detail, projects, consultants, storage, admin };
@@ -61,10 +69,10 @@ export const ctx = {
 // ---------------------------------------------------------------- auth
 
 function showOnly(id) {
-  ['loading', 'login', 'view'].forEach((s) => { $(s).hidden = s !== id; });
+  ['loading', 'login', 'recovery', 'view'].forEach((s) => { $(s).hidden = s !== id; });
 }
 
-function showLogin(message) {
+function showLogin(message, info) {
   ctx.user = null;
   ctx.role = null;
   $('nav').hidden = true;
@@ -73,7 +81,55 @@ function showLogin(message) {
   const err = $('loginError');
   err.textContent = message ?? '';
   err.hidden = !message;
+  $('loginInfo').textContent = info ?? '';
+  $('loginInfo').hidden = !info;
 }
+
+function showRecovery() {
+  $('nav').hidden = true;
+  $('logoutBtn').hidden = true;
+  $('recoveryError').hidden = true;
+  showOnly('recovery');
+  $('newPassword').focus();
+}
+
+// "Forgot password?" — emails a link that comes back to this page.
+$('forgotBtn').addEventListener('click', async () => {
+  const email = $('loginEmail').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return showLogin(t('auth.forgotNeedEmail'));
+  $('forgotBtn').disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${location.origin}${location.pathname}`,
+  });
+  $('forgotBtn').disabled = false;
+  if (error) {
+    const limited = /rate|limit|seconds/i.test(error.message);
+    return showLogin(t(limited ? 'auth.forgotLimit' : 'err.generic'));
+  }
+  showLogin(null, t('auth.forgotSent'));
+});
+
+$('recoveryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const p1 = $('newPassword').value;
+  const p2 = $('newPassword2').value;
+  const err = $('recoveryError');
+  const fail = (key) => { err.textContent = t(key); err.hidden = false; };
+  if (p1.length < 8) return fail('auth.newTooShort');
+  if (p1 !== p2) return fail('auth.newMismatch');
+  $('recoveryBtn').disabled = true;
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  $('recoveryBtn').disabled = false;
+  if (error) {
+    const weak = /weak|short|characters/i.test(error.message);
+    const same = /different|same/i.test(error.message);
+    return fail(same ? 'auth.newSame' : weak ? 'auth.newTooShort' : 'err.generic');
+  }
+  $('newPassword').value = '';
+  $('newPassword2').value = '';
+  toast(t('auth.newSaved'));
+  enter(data.user);
+});
 
 async function enter(user) {
   showOnly('loading');
@@ -148,9 +204,12 @@ async function boot() {
   window.addEventListener('langchange', route);
   sb.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT' && ctx.user) showLogin();
+    if (event === 'PASSWORD_RECOVERY') showRecovery();
   });
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) enter(session.user);
+  if (LINK_ERROR) showLogin(t(LINK_ERROR === 'otp_expired' ? 'auth.linkExpired' : 'auth.linkInvalid'));
+  else if (ARRIVED_FOR_RECOVERY && session?.user) showRecovery();
+  else if (session?.user) enter(session.user);
   else showLogin();
 }
 

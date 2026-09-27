@@ -54,7 +54,26 @@
           <input class="input" id="loginPassword" type="password" autocomplete="current-password" required dir="ltr">
         </label>
         <div id="loginError" class="msg error" role="alert" hidden></div>
+        <div id="loginInfo" class="msg ok" role="status" hidden></div>
         <button type="submit" class="btn primary lg block" id="loginBtn" data-i18n="auth.submit">Sign in</button>
+        <p class="center-link"><button type="button" class="linkbtn" id="forgotBtn" data-i18n="auth.forgot">Forgot password?</button></p>
+      </form>
+    </section>
+
+    <section id="recovery" class="login" hidden>
+      <form id="recoveryForm" class="panel" novalidate>
+        <h1 data-i18n="auth.newTitle">Set a new password</h1>
+        <label class="field">
+          <span class="label" data-i18n="auth.newPassword">New password</span>
+          <input class="input" id="newPassword" type="password" autocomplete="new-password" minlength="8" required dir="ltr">
+          <span class="hint" data-i18n="auth.newHint"></span>
+        </label>
+        <label class="field">
+          <span class="label" data-i18n="auth.newPassword2">Repeat the new password</span>
+          <input class="input" id="newPassword2" type="password" autocomplete="new-password" minlength="8" required dir="ltr">
+        </label>
+        <div id="recoveryError" class="msg error" role="alert" hidden></div>
+        <button type="submit" class="btn primary lg block" id="recoveryBtn" data-i18n="auth.newSave">Save password</button>
       </form>
     </section>
 
